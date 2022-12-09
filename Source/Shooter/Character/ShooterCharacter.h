@@ -36,7 +36,17 @@ protected:
 	*/
 	void TurnAtRate(float Rate );
 	void LookUpRate(float Rate);
+	
+	void FireWeapon();
 
+	UFUNCTION()
+	void FireWeaponHandle();
+
+	UFUNCTION(Server, Reliable)
+		void Server_FireWeapon(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void Multicast_FireWeapon(const FVector_NetQuantize& TraceHitTarget);
 
 private:
 	/**Camera Boom positioning the camera behind the character */
@@ -54,6 +64,41 @@ private:
 	/** Base  Look Up/Down, in deg/sec, Other scaling may affect final turn rate*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		float BaseLookUpRate;
+
+	/** Base  Yaw, in deg */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		float PawYawRate;  
+
+	/** !!Atached in Fire Montage!!
+	*   Sound fx for fire shot,  
+	*   If you want handle here you have to Disable 
+	 *   in Fire montage ( Null in Sound Notification )
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class USoundCue* FireSound;
+	
+	/** !!Atached in Fire Montage!!
+	* flash spwaned particle fx for fire shot at Barrel socket
+	*  If you want handle here you have to Disable 
+	*  in Fire montage ( Null in Sound Notification )
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	   class UParticleSystem* MuzzleFlash;
+
+	/**particle fx  spwaned  upon bullet impact*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		class UParticleSystem* ImpactParticles;
+
+	/**Smoke trail for bullet*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		class UParticleSystem* BeamParticles;
+
+
+	/** flasd spwaned particle fx for fire shot at Barrel socket*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* HipFireMontage;
+
+
 
 
 public:
