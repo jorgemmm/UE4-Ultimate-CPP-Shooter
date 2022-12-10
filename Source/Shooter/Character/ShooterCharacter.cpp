@@ -23,6 +23,7 @@
 //Utils
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+//#include "Kismet/KismetMathLibrary.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -133,25 +134,13 @@ void AShooterCharacter::FireWeapon()
 
 }
 
+
+
 void AShooterCharacter::FireWeaponHandle()
 {
 	
 
 	//UE_LOG(LogTemp, Warning, TEXT("Firing Wepaon"))
-
-	//if (FireSound)
-	//{
-	//	//UGameplayStatics::PlaySound2D(this, FireSound);
-	//	UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	//}
-
-	//if (MuzzleFlash)
-	//{
-	//	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, GetMesh(), FName("BarrelSocket"));
-	//}
-
-
-	
 
 
 	// Fx´s are in the Motages ( sounds and emmiters)
@@ -169,60 +158,142 @@ void AShooterCharacter::FireWeaponHandle()
 	
 	//Line trace by channel
 	
-	const USkeletalMeshSocket* MuzzleFlash_BarrelSocket = GetMesh()->GetSocketByName(FName("BarrelSocket"));
-	
-	if (!MuzzleFlash_BarrelSocket) 
-	{   
-		UE_LOG(LogTemp, Error, TEXT("BarrelSocket Does NOT Exist in this Mesh"))
-		return;
+	//FHitResult ScreenTracerHit;
+	if(TraceUnderCursor())
+	{
+	  UE_LOG(LogTemp, Warning, TEXT(" proyeccion del punto de mira de 2D en el mundo 3D correcto "))
 	}
 
-	const FTransform BarrelSocketTransform = MuzzleFlash_BarrelSocket->GetSocketTransform(GetMesh());
-	
-	FHitResult FireHit;
-
-	const FVector Start{ BarrelSocketTransform.GetLocation() };
-	const FQuat  Rotation{ BarrelSocketTransform.GetRotation() };
-	const FVector RotationAxis{ Rotation.GetAxisX() };
-	const FVector End{ Start + RotationAxis * 50'000.f };
-
-	FVector BeamEndPoint{ End };
-
-	GetWorld()->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
 	
 	
-	if (FireHit.bBlockingHit)
+}
+
+
+
+bool AShooterCharacter::TraceUnderCursor()//(FHitResult ScreenTracerHit)
+{
+	//This way is independent from weapon.
+	//depend about the crooshair-> line trace start in crooshair and finish 
+	//in  a point projected to world from crooshair.
+	
+
+	//Get current size of the viewport
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
 	{
-		/*DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 2.f,0,5.f);
-		DrawDebugPoint(GetWorld(), FireHit.Location, 8.f, FColor::Red, false, 2.0);*/
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
 
-		UE_LOG(LogTemp, Error, TEXT("Hit to: %s"), *FireHit.GetActor()->GetFName().ToString());
+	//Get screen space location of the crosshairs
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	CrosshairLocation.Y -= 50.f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	//An then we are gonna make a line trace -> projection from this point to n
+	// Get world position and direction of crosshairs
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
 	
-		if (ImpactParticles)
+	if (bScreenToWorld)//Was deprojection succesful?
+	{
+		FHitResult ScreenTracerHit;
+		const FVector Start{ CrosshairWorldPosition };
+		const FVector End  { CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f };
+
+
+		//Then this Way from crooshayr to blocking actor in visibility channel
+		GetWorld()->LineTraceSingleByChannel(ScreenTracerHit,
+			Start, End, ECC_Visibility);
+
+		if (ScreenTracerHit.bBlockingHit)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHit.Location);
+			/*DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 2.f,0,5.f);
+			DrawDebugPoint(GetWorld(), ScreenTracerHit.Location, 8.f, FColor::Red, false, 2.0);
+			UE_LOG(LogTemp, Error, TEXT("Hit to: %s"), *ScreenTracerHit.GetActor()->GetFName().ToString());*/
+
+			FXFire(ScreenTracerHit);
 			
 		}
 
-		BeamEndPoint = FireHit.Location;
-		
+	}
+	return bScreenToWorld;
+
+}
+
+void AShooterCharacter::FXFire(FHitResult HitResult)//, FVector& BeamEndLocation)
+{
+	FVector BeamEndPoint{ HitResult.TraceEnd };
+	
+	if (HitResult.bBlockingHit)
+	{
+		//BeamEndLocation= HitResult.Location;
+		BeamEndPoint= HitResult.Location;
+		//UE_LOG(LogTemp, Error, TEXT("Hit to: %s"), *HitResult.GetActor()->GetFName().ToString());
+	
+	}
+	
+	const USkeletalMeshSocket* MuzzleFlash_BarrelSocket = GetMesh()->GetSocketByName(FName("BarrelSocket"));
+	if (!MuzzleFlash_BarrelSocket)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BarrelSocket Does NOT Exist in this Mesh"))
+		return;
+	}
+	const FTransform BarrelSocketTransform = MuzzleFlash_BarrelSocket->GetSocketTransform(GetMesh());
+
+	
+
+	FHitResult WeaponTraceHit;
+	const FVector WeaponTraceStart{ BarrelSocketTransform.GetLocation() };
+	//const FQuat  Rotation{ BarrelSocketTransform.GetRotation() };
+	const FVector WeaponTraceEnd{ BeamEndPoint };
+	GetWorld()->LineTraceSingleByChannel(
+				WeaponTraceHit,
+				WeaponTraceStart,	
+				WeaponTraceEnd,
+				ECC_Visibility);
+
+
+
+	if(WeaponTraceHit.bBlockingHit) //Object between barrel and BeamEndPoint
+	{
+		BeamEndPoint = WeaponTraceHit.Location;
+	}
+
+	//Spawn ImpacrParticel after updating BeamEndPoint
+	if (ImpactParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEndPoint);
+
 	}
 
 	if (BeamParticles)
 	{
-		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-			GetMesh(), 
-			BeamParticles, 
-			BarrelSocketTransform.GetLocation());
-     	//, GetMesh(), FName("BarrelSocket"));
 
-		if (Beam) 
+
+		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+			GetMesh(),
+			BeamParticles,
+			BarrelSocketTransform.GetLocation());
+		//, GetMesh(), FName("BarrelSocket"));
+		if (Beam)
 		{
 			Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
 		}
-
-
 	}
+
+	//FHitResult FireHit;
+	//const FVector Start{ BarrelSocketTransform.GetLocation() };
+	//const FQuat  Rotation{ BarrelSocketTransform.GetRotation() };
+	//const FVector RotationAxis{ Rotation.GetAxisX() };
+	//const FVector End{ Start + RotationAxis * 50'000.f };
+	//FVector BeamEndPoint{ End };
+	//GetWorld()->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
+
 }
 
 void AShooterCharacter::Server_FireWeapon_Implementation(const FVector_NetQuantize& TraceHitTarget)

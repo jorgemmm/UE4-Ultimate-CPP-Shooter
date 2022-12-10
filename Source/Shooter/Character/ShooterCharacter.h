@@ -39,14 +39,22 @@ protected:
 	
 	void FireWeapon();
 
+	
 	UFUNCTION()
 	void FireWeaponHandle();
+
+	
+	bool TraceUnderCursor();//(FHitResult ScreenTracerHit);
+	void FXFire(FHitResult HitResult);//, FVector& BeamEndLocation);
+
 
 	UFUNCTION(Server, Reliable)
 		void Server_FireWeapon(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Reliable)
 		void Multicast_FireWeapon(const FVector_NetQuantize& TraceHitTarget);
+
+
 
 private:
 	/**Camera Boom positioning the camera behind the character */
