@@ -9,7 +9,7 @@ Is a basic template for a mono player shooter whith enough features and Assets t
 ##installation
 1. You Clone the repository:
 ```bash
- git clone https://github.com/jorgemmm/UECPPShooter.git
+ git clone https://github.com/jorgemmm/UnrealEngine4-CPP-Ultimate-Shooter.git
 ```
 You can download as zip.
 
