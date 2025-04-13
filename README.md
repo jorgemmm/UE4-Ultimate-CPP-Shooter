@@ -37,3 +37,4 @@ And the Gamemode complete ready: Player with Animation Blueprint + HUD
 
 ## License
 This project is licensed under the [MIT License](https://mit-license.org/).
+Original code from udemy courses: [Unreal Engine 4 C++ The Ultimate Shooter Course](https://www.udemy.com/course/unreal-engine-the-ultimate-shooter-course/)
