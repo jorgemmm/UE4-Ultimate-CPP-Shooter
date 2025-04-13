@@ -49,7 +49,7 @@ AShooterCharacter::AShooterCharacter():
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // attach camera to end of boom
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	//Don´t rotate when the con trroller rotates. Let the controller only affect the camera
+	//DonÂ´t rotate when the con trroller rotates. Let the controller only affect the camera
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = true;
@@ -115,7 +115,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AShooterCharacter::TurnAtRate(float Rate)
 {
-	//Calcuñate delta for this frame from the rate information
+	//CalcuÃ±ate delta for this frame from the rate information
 	//Input * velgiroBase * DeltaTime       ( DeltaTime =  1 / FPS,  Tiempo entre frames , DeltaTime -> 1 tick   )
 	// input[0,1] * deg/sec * sec/frames -> deg/frames
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds()); 
@@ -138,34 +138,21 @@ void AShooterCharacter::FireWeapon()
 
 void AShooterCharacter::FireWeaponHandle()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Firing Wepaon"))
 	
-
-	//UE_LOG(LogTemp, Warning, TEXT("Firing Wepaon"))
-
-
-	// Fx´s are in the Motages ( sounds and emmiters)
-
+	//FxÂ´s are in the Motages ( sounds and emmiters)
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HipFireMontage)
-	{
-		
+	{		
 		AnimInstance->Montage_Play(HipFireMontage);
-		AnimInstance->Montage_JumpToSection(FName("StartFire"));
-		
+		AnimInstance->Montage_JumpToSection(FName("StartFire"));		
 	}
 	
-	//if (!HasAuthority()) return;
 	
-	//Line trace by channel
-	
-	//FHitResult ScreenTracerHit;
 	if(TraceUnderCursor())
 	{
 	  UE_LOG(LogTemp, Warning, TEXT(" proyeccion del punto de mira de 2D en el mundo 3D correcto "))
 	}
-
-	
-	
 }
 
 
@@ -174,8 +161,7 @@ bool AShooterCharacter::TraceUnderCursor()//(FHitResult ScreenTracerHit)
 {
 	//This way is independent from weapon.
 	//depend about the crooshair-> line trace start in crooshair and finish 
-	//in  a point projected to world from crooshair.
-	
+	//in  a point projected to world from crooshair.	
 
 	//Get current size of the viewport
 	FVector2D ViewportSize;
@@ -212,6 +198,7 @@ bool AShooterCharacter::TraceUnderCursor()//(FHitResult ScreenTracerHit)
 
 		if (ScreenTracerHit.bBlockingHit)
 		{
+			//Use this to debug
 			/*DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 2.f,0,5.f);
 			DrawDebugPoint(GetWorld(), ScreenTracerHit.Location, 8.f, FColor::Red, false, 2.0);
 			UE_LOG(LogTemp, Error, TEXT("Hit to: %s"), *ScreenTracerHit.GetActor()->GetFName().ToString());*/
@@ -231,9 +218,9 @@ void AShooterCharacter::FXFire(FHitResult HitResult)//, FVector& BeamEndLocation
 	
 	if (HitResult.bBlockingHit)
 	{
-		//BeamEndLocation= HitResult.Location;
 		BeamEndPoint= HitResult.Location;
-		//UE_LOG(LogTemp, Error, TEXT("Hit to: %s"), *HitResult.GetActor()->GetFName().ToString());
+		//use this for debug
+		//UE_LOG(LogTemp, Warning, TEXT("Hit to: %s"), *HitResult.GetActor()->GetFName().ToString());
 	
 	}
 	
@@ -286,14 +273,6 @@ void AShooterCharacter::FXFire(FHitResult HitResult)//, FVector& BeamEndLocation
 		}
 	}
 
-	//FHitResult FireHit;
-	//const FVector Start{ BarrelSocketTransform.GetLocation() };
-	//const FQuat  Rotation{ BarrelSocketTransform.GetRotation() };
-	//const FVector RotationAxis{ Rotation.GetAxisX() };
-	//const FVector End{ Start + RotationAxis * 50'000.f };
-	//FVector BeamEndPoint{ End };
-	//GetWorld()->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
-
 }
 
 void AShooterCharacter::Server_FireWeapon_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -307,9 +286,6 @@ void AShooterCharacter::Multicast_FireWeapon_Implementation(const FVector_NetQua
 }
 
 
-
-
-
 void AShooterCharacter::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.f))
@@ -319,7 +295,6 @@ void AShooterCharacter::MoveForward(float Value)
 
 		const FVector Direction{ FRotationMatrix{ YawRotation }.GetUnitAxis(EAxis::X) };
 		
-		//FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
 	}
@@ -334,7 +309,6 @@ void AShooterCharacter::MoveRight(float Value)
 
 		const FVector Direction{ FRotationMatrix{ YawRotation }.GetUnitAxis(EAxis::Y) };
 
-		//FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 	}
 }
