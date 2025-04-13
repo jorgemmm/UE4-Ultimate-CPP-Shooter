@@ -1,4 +1,4 @@
-# TP Shooter  
+# Third Person Shooter  
 
 
 ## Table of Contents
@@ -22,9 +22,20 @@ You can download as zip.
 
 ## usage
 
-Es un ejemplo de cómo implementar usando punto de mira en un shooter
-line tarce y soporte multijugador
-Tambien gestiona las animaciones en CPP
+This is an example of how to implement crosshairs in a shooter
+And how to setup and shooter character in cpp.
+It also manages animations in CPP.
+
+Has complete free asset from Fab (paragon) to start.
+Character Belica (and weapon) from paragon and anims.
+Crosshairs ready in HUD.
+Audios for shots
+Fx Smoke beam for fire shots trace.
+And the Gamemode complete ready: Player with Animation Blueprint + HUD
+
+
+
+
   
   
 ```bash
