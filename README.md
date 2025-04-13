@@ -1,5 +1,5 @@
-# Third Person Shooter  
-
+# Ultimate CPP Shooter  
+Is a basic template for a mono player shooter whith enough features and Assets to start 
 
 ## Table of Contents
 - [Installation](#installation)
