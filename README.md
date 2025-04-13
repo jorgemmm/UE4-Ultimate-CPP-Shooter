@@ -35,19 +35,5 @@ And the Gamemode complete ready: Player with Animation Blueprint + HUD
 
 
 
-
-  
-  
-```bash
-bool TraceUnderCursor();//(FHitResult ScreenTracerHit);
-void FXFire(FHitResult HitResult);//, FVector& BeamEndLocation);
-UFUNCTION(Server, Reliable)
-  void Server_FireWeapon(const FVector_NetQuantize& TraceHitTarget);
-UFUNCTION(NetMulticast, Reliable)
-  void Multicast_FireWeapon(const FVector_NetQuantize& TraceHitTarget);
-
-```
-
-
 ## License
 This project is licensed under the [MIT License](https://mit-license.org/).
